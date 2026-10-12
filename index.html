@@ -192,12 +192,12 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-o
 html,body{background:radial-gradient(ellipse at 18% -10%,#f9fbff 0%,transparent 45%),linear-gradient(145deg,#e8edf6,#cdd7e7 58%,#b9c7dc);}
 body::after{font-size:14vw;color:rgba(39,83,153,.025);letter-spacing:.02em;transform:translate(-50%,-50%) rotate(-18deg)}
 #app{background:linear-gradient(160deg,rgba(255,255,255,.22),rgba(226,234,246,.18));}
-.top{background:linear-gradient(135deg,#233b61 0%,#172b4d 48%,#101e38 100%);border:0;border-bottom:1px solid rgba(255,255,255,.15);box-shadow:0 8px 24px rgba(18,35,65,.18);padding:calc(var(--safe-t) + 12px) 18px 12px;transition:padding .24s ease;}
+.top{background:linear-gradient(135deg,#233b61 0%,#172b4d 48%,#101e38 100%);border:0;border-bottom:1px solid rgba(255,255,255,.15);box-shadow:0 8px 24px rgba(18,35,65,.18);padding:calc(var(--safe-t) + 12px) 18px 12px;transition:padding .44s cubic-bezier(.22,.75,.25,1);}
 .logo{border:1px solid rgba(255,255,255,.6);border-radius:12px;background:linear-gradient(145deg,#8eb8ff,#3979e8 60%,#2051b5);box-shadow:inset 0 1px 1px #fff8,0 5px 12px #08172d66}
 .brand b{font-size:19px;letter-spacing:-.04em;text-shadow:none}.brand small{color:#b6cefa;letter-spacing:.22em}
 .led{border:0;border-radius:50%;background:#75e0bf;box-shadow:0 0 0 4px #75e0bf20,0 0 12px #75e0bf99}
 #toast{color:#d9e5fa}
-.lcd{margin:12px 12px 0;padding:14px 16px 12px;border:1px solid rgba(255,255,255,.22);border-radius:20px;background:linear-gradient(145deg,#172b4a 0%,#0c1830 68%,#142b50 100%);box-shadow:inset 0 1px 0 #ffffff20,inset 0 -16px 30px #020a1b55,0 8px 22px #13294a30;transition:padding .24s ease,margin .24s ease,border-radius .24s ease;overflow:hidden}
+.lcd{margin:12px 12px 0;padding:14px 16px 12px;border:1px solid rgba(255,255,255,.22);border-radius:20px;background:linear-gradient(145deg,#172b4a 0%,#0c1830 68%,#142b50 100%);box-shadow:inset 0 1px 0 #ffffff20,inset 0 -16px 30px #020a1b55,0 8px 22px #13294a30;transition:padding .44s cubic-bezier(.22,.75,.25,1),margin .44s cubic-bezier(.22,.75,.25,1),border-radius .44s cubic-bezier(.22,.75,.25,1);overflow:hidden}
 .lcd::after{background:linear-gradient(155deg,#ffffff12 0%,#ffffff05 25%,transparent 48%);border-radius:inherit}
 #trackTitle{font-size:14px;letter-spacing:.01em;color:#d5e5ff;text-shadow:none;margin-bottom:2px}
 #trackTitle.empty{color:#8297b8}
@@ -205,7 +205,7 @@ body::after{font-size:14vw;color:rgba(39,83,153,.025);letter-spacing:.02em;trans
 .badge{margin-left:auto;padding:5px 9px;border:1px solid #ffffff20;border-radius:9px;background:linear-gradient(145deg,#477ed4,#2b58a4);box-shadow:inset 0 1px #ffffff35,0 3px 8px #0002;font-size:11px}
 .badge+.badge{margin-left:0}
 .meter{height:6px;border:0;border-radius:99px;background:#050e20;margin-top:8px;box-shadow:inset 0 1px 3px #0009;overflow:hidden}.meter i{border-radius:99px;background:linear-gradient(90deg,#66a5ff,#9dd7ff,#a5f2d3);filter:none}
-.transport{gap:9px;padding:12px 10px 5px;transition:padding .24s ease;}
+.transport{gap:9px;padding:12px 10px 5px;transition:padding .44s cubic-bezier(.22,.75,.25,1);}
 .btn{border:1px solid #ffffffa8;border-radius:13px;color:#263957;font-size:15px;font-weight:750;min-height:52px;padding:0 13px;background:linear-gradient(155deg,#fff 0%,#f0f4fb 58%,#d9e2f1 100%);box-shadow:inset 0 1px 0 #fff,0 3px 0 #9eacc3,0 6px 13px #233d6424;text-shadow:none;transition:transform .16s ease,box-shadow .16s ease,background .16s ease;margin-bottom:6px}
 .btn::after{display:none}.btn:active,.btn.on{transform:translateY(2px);box-shadow:inset 0 2px 7px #142b4a22,0 1px 0 #9eacc3,0 2px 5px #233d6420}
 .btn.on{color:#fff;background:linear-gradient(145deg,#609bff,#3474e8 65%,#285fc7);box-shadow:inset 0 1px #ffffff45,0 2px 6px #255ab544;text-shadow:0 1px 2px #102c6155}
@@ -218,12 +218,12 @@ body::after{font-size:14vw;color:rgba(39,83,153,.025);letter-spacing:.02em;trans
 #play{width:72px;height:70px;min-height:70px;border-radius:22px;margin-bottom:6px;box-shadow:inset 0 1px #ffffff80,0 4px 0 #244b91,0 9px 16px #173b793d}
 #play:active,#play.playing{transform:translateY(3px);box-shadow:inset 0 4px 10px #102b6b55,0 1px 0 #244b91}
 #play svg{width:32px;height:32px;filter:drop-shadow(0 1px 1px #17345b55)}
-.loopRow{gap:9px;padding:3px 12px 10px;transition:padding .24s ease}.loopRow .btn{min-height:43px;font-size:13px;border-radius:11px}
+.loopRow{gap:9px;padding:3px 12px 10px;transition:padding .44s cubic-bezier(.22,.75,.25,1)}.loopRow .btn{min-height:43px;font-size:13px;border-radius:11px}
 main{padding:12px 12px 22px;scrollbar-width:none;overscroll-behavior-y:none;overscroll-behavior-x:none;scroll-behavior:auto;overflow-anchor:none;touch-action:pan-y;-webkit-overflow-scrolling:touch;min-height:0;flex:1 1 0%}main::-webkit-scrollbar{display:none}
 /* Keep touch scrolling native and prevent scroll chaining/rubber-band at container edges. */
 html,body,#app{overscroll-behavior:none}body{overflow:hidden}#app{min-height:0;overflow:hidden}
 /* Keep the scroll gesture native; animate the deck's size changes rather than snapping it. */
-.top,.logo,.brand b,.brand small,.lcd,#trackTitle,.digits,.lcdRow,.badge,.meter,.transport,.skip,#play,.loopRow,.loopRow .btn{transition-property:padding,margin,width,height,min-height,font-size,gap,border-radius,box-shadow,transform;transition-duration:.28s;transition-timing-function:cubic-bezier(.22,.61,.36,1)}
+.top,.logo,.brand b,.brand small,.lcd,#trackTitle,.digits,.lcdRow,.badge,.meter,.transport,.skip,#play,.loopRow,.loopRow .btn{transition-property:padding,margin,width,height,min-height,font-size,gap,border-radius,box-shadow,transform;transition-duration:.44s;transition-timing-function:cubic-bezier(.22,.75,.25,1)}
 .paper{overflow-x:hidden;overflow-y:hidden;contain:paint}
 #sheet{height:286px;touch-action:pan-y}
 .card{border:1px solid #ffffffd9;border-radius:20px;padding:20px 15px 15px;margin-bottom:15px;background:linear-gradient(150deg,rgba(255,255,255,.97),rgba(237,243,252,.96) 65%,rgba(224,233,246,.98));box-shadow:inset 0 1px 0 #fff,0 5px 18px #263e6117,0 1px 2px #1b315019;}
@@ -1344,8 +1344,8 @@ buildKeys();
 function goTab(t){tab=t;$$('.panel').forEach(p=>p.classList.toggle('on',p.dataset.panel===t));$$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));$('main').scrollTop=0;}
 const mainScroll=$('main');
 let compactTimer=0,compactState=false;
-// Avoid resizing the player while the finger/momentum scroll is active; changing the
-// scroll viewport mid-gesture can feel like a spring. Apply the compact layout at rest.
+// Keep the browser's native momentum scrolling untouched. Change layout only once
+// the gesture settles, then ease every affected dimension together for a connected feel.
 mainScroll.addEventListener('scroll',()=>{
   if(compactTimer)clearTimeout(compactTimer);
   compactTimer=setTimeout(()=>{
@@ -1353,7 +1353,7 @@ mainScroll.addEventListener('scroll',()=>{
     const y=mainScroll.scrollTop;
     if(!compactState&&y>34){compactState=true;$('#app').classList.add('compact');}
     else if(compactState&&y<8){compactState=false;$('#app').classList.remove('compact');}
-  },140);
+  },105);
 },{passive:true});
 $$('#tabs button').forEach(b=>b.onclick=()=>goTab(b.dataset.tab));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx&&ctx.state==='suspended')ctx.resume();});
