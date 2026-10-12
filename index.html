@@ -263,6 +263,30 @@ nav.tabs button svg{width:21px;height:21px}nav.tabs button.on{color:#fff;backgro
 @media(max-width:380px){.digits{font-size:28px}.badge{font-size:10px;padding:4px 6px}.transport{gap:5px}.skip{width:46px;min-width:46px}.skip.sm{width:36px;min-width:36px}.card{padding:18px 12px 13px}.knob{width:82px;height:82px}}
 @media(prefers-reduced-motion:reduce){.top,.lcd,.transport,.loopRow,.logo,.brand b,.brand small,#trackTitle,.digits,.lcdRow,.badge,.meter,.skip,#play,.loopRow .btn{transition:none!important}}
 
+
+/* ===== 동기화 가사 / 노래방 표시 ===== */
+.lyricSearch{display:grid;grid-template-columns:1fr;gap:9px}
+.lyricSearch input{width:100%;min-width:0;border:1px solid #8daee0;border-radius:12px;padding:13px 12px;font:inherit;font-weight:650;color:var(--navy);background:#f7fbff;box-shadow:inset 0 2px 3px #173b7910}
+.lyricActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lyricStatus{font-size:12px;font-weight:750;color:#41649c;line-height:1.5;padding:9px 11px;border-radius:10px;background:#e8f2ff}
+.lyricResults{display:grid;gap:7px;margin-top:10px}
+.lyricCandidate{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:12px;border:1px solid #bfd3f0;border-radius:12px;background:linear-gradient(#fff,#edf5ff);box-shadow:0 2px 4px #183b7510;margin:0;min-height:58px}
+.lyricCandidate:active{transform:scale(.99)}
+.lyricCandidate strong,.lyricCandidate small{display:block;overflow-wrap:anywhere}
+.lyricCandidate small{font-size:11px;color:#5c75a0;margin-top:4px}
+.lyricBadge{flex:none;font-size:10px;font-weight:850;border-radius:7px;padding:5px 7px;background:#d6e9ff;color:#174b98}
+.lyricStage{background:linear-gradient(180deg,#071a46,#0b2c70 58%,#061638);color:#eaf4ff;border:1px solid #4267a9;border-radius:16px;padding:16px 10px 18px;box-shadow:inset 0 3px 14px #0007;overflow:hidden}
+.lyricMeta{font-size:11px;line-height:1.6;color:#a9caff;text-align:center;margin:0 6px 8px}
+.lyricLines{height:min(48vh,420px);min-height:220px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#4d7fc8 transparent;padding:34px 8px;scroll-behavior:smooth;mask-image:linear-gradient(transparent,#000 9%,#000 91%,transparent)}
+.lyricLine{display:block;width:100%;min-height:42px;padding:9px 4px;margin:4px 0;text-align:center;border:0;border-radius:9px;color:#87a9dc;font-size:clamp(16px,4.4vw,21px);font-weight:750;line-height:1.45;background:transparent;box-shadow:none;transition:color .18s,transform .18s,text-shadow .18s;overflow-wrap:anywhere}
+.lyricLine.active{color:#fff;font-size:clamp(19px,5.1vw,25px);font-weight:950;transform:scale(1.015);text-shadow:0 0 15px #5ab5ff,0 0 3px #fff}
+.lyricLine:not([data-time]){cursor:default}
+.lyricLine.gap{min-height:16px;height:16px;padding:0;margin:1px 0;opacity:.2}
+.lyricEmpty{text-align:center;color:#a9caff;padding:30px 12px;line-height:1.7;font-size:13px}
+.lyricFooter{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:10px;font-size:11px;color:#5a75a2}
+.lyricFooter a{color:#286dc4;font-weight:800}
+@media(prefers-reduced-motion:reduce){.lyricLine{transition:none}.lyricLines{scroll-behavior:auto}}
+
 </style>
 </head>
 <body>
@@ -328,10 +352,11 @@ nav.tabs button svg{width:21px;height:21px}nav.tabs button.on{color:#fff;backgro
         <div class="ct"><span>보컬 / 반주</span></div>
         <div class="g2" id="vmode">
           <button class="btn on" data-st data-m="orig">원본</button><button class="btn" data-st data-m="rm">보컬 삭제</button>
-          <button class="btn" data-st data-m="only">반주 삭제</button><button class="btn" data-st data-m="pan">소리 위치 선택</button>
+          <button class="btn" data-st data-m="only">반주 삭제 · 보컬 중심</button><button class="btn" data-st data-m="pan">소리 위치 선택</button>
         </div>
+        <p class="hint">‘보컬 삭제’는 중앙 성분의 보컬 대역을 줄이고, ‘반주 삭제’는 중앙 성분 위주로 재생합니다. 원본 믹스만으로는 악기와 보컬을 완벽히 분리할 수 없습니다.</p>
         <div id="vocCtl" hidden>
-          <div class="ct mt"><span>강도</span><span class="val" id="stOut">70%</span></div>
+          <div class="ct mt"><span>보컬 감쇠 강도</span><span class="val" id="stOut">70%</span></div>
           <input type="range" id="strength" min="0" max="100" step="1" value="70">
         </div>
         <div id="panCtl" hidden>
@@ -343,7 +368,7 @@ nav.tabs button svg{width:21px;height:21px}nav.tabs button.on{color:#fff;backgro
           <canvas id="panHist"></canvas>
           <p class="hint">재생 중에 막대가 높은 곳이 소리가 모여 있는 위치예요. 화면을 눌러서 그 위치의 소리만 들어보세요. 보컬이 여럿이면 위치별로 나눠 들을 수 있어요.</p>
         </div>
-        <p class="hint">스테레오 좌우 위치를 기준으로 소리를 나눠요. AI 분리가 아니라서 같은 자리에 겹쳐 있는 소리(가운데의 베이스·드럼, 같은 위치의 여러 보컬)는 완전히 갈라지지 않아요.</p>
+        <p class="hint">이 기능은 스테레오의 중앙(Mid)·좌우 차이(Side) 성분을 이용합니다. AI 보컬 분리와 달라서 중앙에 있는 악기도 함께 줄거나 남을 수 있으며, 곡에 따라 보컬을 완전히 제거하거나 보컬만 남기기는 어렵습니다.</p>
       </div>
     </div>
 
@@ -442,12 +467,34 @@ nav.tabs button svg{width:21px;height:21px}nav.tabs button.on{color:#fff;backgro
         <div class="tog"><span>버튼 소리</span><label class="sw"><input type="checkbox" id="uiSnd" checked aria-label="버튼 소리"><span></span></label></div>
       </div>
     </div>
+
+    <!-- 노래방 가사 -->
+    <div class="panel" data-panel="lyrics">
+      <div class="card">
+        <div class="ct"><span>노래방 가사</span><span class="val" id="lyricSyncBadge">대기 중</span></div>
+        <p class="hint">재생 중인 곡의 제목·가수 정보를 바탕으로 싱크 가사를 검색합니다. 파일명이 ‘가수 - 곡명’ 형식이면 더 정확해요. 일치하는 곡을 확인한 뒤 선택하세요.</p>
+        <div class="lyricSearch">
+          <input id="lyricTitle" type="text" placeholder="곡 제목" aria-label="가사 검색 곡 제목" autocomplete="off">
+          <input id="lyricArtist" type="text" placeholder="가수명 (선택 사항)" aria-label="가수명" autocomplete="off">
+          <div class="lyricActions"><button class="btn" id="lyricSearchBtn">웹에서 가사 찾기</button><button class="btn" id="lyricClearBtn">가사 초기화</button></div>
+        </div>
+        <div id="lyricStatus" class="lyricStatus" role="status" aria-live="polite">음원을 불러오면 가사를 찾아볼 수 있어요.</div>
+        <div id="lyricResults" class="lyricResults"></div>
+      </div>
+      <div class="card">
+        <div class="ct"><span id="lyricTrackHeading">가사 싱크</span><span class="val" id="lyricNow">—</span></div>
+        <div class="lyricStage"><div class="lyricMeta" id="lyricMeta">곡을 불러온 뒤 가사를 검색하세요.</div><div class="lyricLines" id="lyricLines"><div class="lyricEmpty">검색된 가사가 여기에 표시됩니다.</div></div></div>
+        <div class="lyricFooter"><span>가사 출처: LRCLIB · 커뮤니티 제공 데이터</span><a href="https://lrclib.net/" target="_blank" rel="noopener noreferrer">출처 열기 ↗</a></div>
+        <p class="hint">시간 정보가 있는 싱크 가사는 재생 위치에 맞춰 강조됩니다. 문장을 누르면 해당 시점부터 재생해요. 일반 텍스트 가사는 타임스탬프가 없어 정확한 싱크·문장 이동을 지원하지 않습니다.</p>
+      </div>
+    </div>
   </main>
 
   <nav class="tabs" id="tabs">
     <button class="on" data-tab="sound"><svg viewBox="0 0 24 24"><path d="M4 8v8M8 5v14M12 9v6M16 4v16M20 8v8"/></svg>소리</button>
     <button data-tab="master"><svg viewBox="0 0 24 24"><path d="M5 20V9M12 20V4M19 20v-7"/><rect x="3" y="11" width="4" height="3"/><rect x="10" y="6" width="4" height="3"/><rect x="17" y="13" width="4" height="3"/></svg>마스터</button>
     <button data-tab="sheet"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 10h18M3 14h18M3 18h18"/></svg>악보</button>
+    <button data-tab="lyrics"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 10h13M4 15h16M4 20h10"/><path d="M19 13v7l3-2"/></svg>가사</button>
     <button data-tab="keys"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14"/><path d="M8 5v14M13 5v14M18 5v14"/></svg>건반</button>
     <button data-tab="list"><svg viewBox="0 0 24 24"><path d="M4 6h12M4 12h12M4 18h8M19 5v10"/><path d="M16 15h3"/></svg>목록</button>
     <button data-tab="save"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>저장</button>
@@ -527,62 +574,62 @@ class SpectralSplit extends AudioWorkletProcessor{
     this.win=new Float32Array(N);for(let i=0;i<N;i++)this.win[i]=0.5-0.5*Math.cos(2*Math.PI*i/N);
     this.inL=new Float32Array(N);this.inR=new Float32Array(N);this.iw=0;this.t=0;
     this.accL=new Float32Array(this.S);this.accR=new Float32Array(this.S);
-    this.re=new Float32Array(N);this.im=new Float32Array(N);this.mk=new Float32Array(N/2+1);
-    this.cs=new Float32Array(N/2);this.sn=new Float32Array(N/2);
+    // Mid/Side를 시간영역에서 먼저 정확히 분리한 뒤 각 신호를 독립적으로 FFT 처리한다.
+    this.mr=new Float32Array(N);this.mi=new Float32Array(N);this.sr=new Float32Array(N);this.si=new Float32Array(N);
+    this.mk=new Float32Array(N/2+1);this.cs=new Float32Array(N/2);this.sn=new Float32Array(N/2);
     for(let k=0;k<N/2;k++){this.cs[k]=Math.cos(2*Math.PI*k/N);this.sn[k]=Math.sin(2*Math.PI*k/N);}
     this.br=new Uint16Array(N);const bits=Math.round(Math.log2(N));
     for(let i=0;i<N;i++){let r=0,x=i;for(let b=0;b<bits;b++){r=(r<<1)|(x&1);x>>=1;}this.br[i]=r;}
-    this.hist=new Float32Array(41);this.hc=0;
-    this.set((o&&o.processorOptions)||{});this.port.onmessage=e=>this.set(e.data);}
+    this.hist=new Float32Array(41);this.hc=0;this.set((o&&o.processorOptions)||{});this.port.onmessage=e=>this.set(e.data);}
   set(p){this.mode=p.mode||'off';this.tg=p.t||0;this.wd=p.w||.25;this.st=p.s==null?.7:p.s;}
-  fft(re,im){
-    const n=this.N,br=this.br;
+  fft(re,im){const n=this.N,br=this.br;
     for(let i=0;i<n;i++){const j=br[i];if(j>i){let t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t;}}
-    for(let size=2;size<=n;size<<=1){const half=size>>1,step=n/size;
-      for(let i=0;i<n;i+=size){for(let j=0,k=0;j<half;j++,k+=step){
-        const a=i+j,b=a+half,wr=this.cs[k],wi=-this.sn[k];
-        const tr=re[b]*wr-im[b]*wi,ti=re[b]*wi+im[b]*wr;
-        re[b]=re[a]-tr;im[b]=im[a]-ti;re[a]+=tr;im[a]+=ti;}}}
-  }
+    for(let size=2;size<=n;size<<=1){const half=size>>1,step=n/size;for(let i=0;i<n;i+=size){for(let j=0,k=0;j<half;j++,k+=step){
+      const a=i+j,b=a+half,wr=this.cs[k],wi=-this.sn[k],tr=re[b]*wr-im[b]*wi,ti=re[b]*wi+im[b]*wr;
+      re[b]=re[a]-tr;im[b]=im[a]-ti;re[a]+=tr;im[a]+=ti;}}}}
+  inverse(re,im){for(let i=0;i<this.N;i++)im[i]=-im[i];this.fft(re,im);for(let i=0;i<this.N;i++){re[i]/=this.N;im[i]=-im[i]/this.N;}}
+  smoothstep(a,b,x){const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);}
   frame(){
-    const N=this.N,re=this.re,im=this.im,w=this.win,mk=this.mk,mode=this.mode,half=N/2,binHz=sampleRate/N,hist=this.hist;
-    for(let i=0;i<N;i++){const idx=(this.iw+i)&(N-1);re[i]=this.inL[idx]*w[i];im[i]=this.inR[idx]*w[i];}
-    this.fft(re,im);
+    const N=this.N,w=this.win,half=N/2,binHz=sampleRate/N,mode=this.mode;
+    const mr=this.mr,mi=this.mi,sr=this.sr,si=this.si;
+    for(let i=0;i<N;i++){const idx=(this.iw+i)&(N-1),l=this.inL[idx],r=this.inR[idx];mr[i]=(l+r)*.5*w[i];mi[i]=0;sr[i]=(l-r)*.5*w[i];si[i]=0;}
+    this.fft(mr,mi);this.fft(sr,si);
     for(let k=0;k<=half;k++){
-      let target=(mode==='rm')?1:0;
-      if(k>0&&k<half){
-        const k2=N-k,zr=re[k],zi=im[k],yr=re[k2],yi=im[k2];
-        const Lr=(zr+yr)*.5,Li=(zi-yi)*.5,Rr=(zi+yi)*.5,Ri=-(zr-yr)*.5;
-        const a=Math.sqrt(Lr*Lr+Li*Li),b=Math.sqrt(Rr*Rr+Ri*Ri);
-        if(a+b>1e-5){
-          const f=k*binHz,p=(b-a)/(a+b),co=(Lr*Rr+Li*Ri)/(a*b+1e-12);
-          const coh=(Math.min(a,b)<.15*Math.max(a,b))?1:Math.min(1,Math.max(0,(co-.4)/.5));
-          if(f>150&&f<7000){let bi=Math.round((p+1)*20);if(bi<0)bi=0;if(bi>40)bi=40;hist[bi]+=(a+b)*coh;}
-          if(mode==='rm'){const d=p/.3,c=Math.exp(-d*d)*coh;target=f<140?1:1-Math.min(1,c*(.7+.6*this.st));}
-          else if(mode==='only'){const d=p/.2,c=Math.pow(Math.exp(-d*d)*coh,1+2*this.st);target=(f<140||f>9000)?0:c;}
-          else if(mode==='pan'){const d=(p-this.tg)/this.wd;target=Math.pow(Math.exp(-d*d)*coh,1+1.5*this.st);}
-          else target=1;
-        }
-      }
-      mk[k]=mk[k]*.55+target*.45;
+      const f=k*binHz,mi2=k===0?0:N-k;
+      const mR=mr[k],mI=mi[k],sR=sr[k],sI=si[k];
+      const lR=mR+sR,lI=mI+sI,rR=mR-sR,rI=mI-sI;
+      const a=Math.hypot(lR,lI),b=Math.hypot(rR,rI),p=(b-a)/(a+b+1e-9);
+      if(f>150&&f<7000){const bi=Math.max(0,Math.min(40,Math.round((p+1)*20)));this.hist[bi]+=(a+b);}
+      let target=1;
+      if(mode==='rm'){
+        // 보컬 삭제: 중앙(Mid) 성분에서 보컬 주요 대역을 감쇠하고 Side 성분은 유지.
+        const band=this.smoothstep(85,180,f)*(1-this.smoothstep(5200,9000,f));
+        target=1-Math.min(.97,this.st*.97*band);
+      }else if(mode==='only'){
+        // 반주 삭제(센터 추출): 중앙 성분만 남기고 저역/초고역의 악기 성분을 완만히 줄인다.
+        const lo=this.smoothstep(65,150,f),hi=1-this.smoothstep(6500,10000,f);
+        target=lo*hi;
+      }else if(mode==='pan'){
+        const d=(p-this.tg)/Math.max(.05,this.wd);target=Math.exp(-d*d)*(a+b>1e-6?1:0);
+      }else if(mode==='off')target=1;
+      this.mk[k]=this.mk[k]*.45+target*.55;
+      const g=this.mk[k];
+      // rm: Mid에만 마스크 적용, Side는 보존. only: Side를 제거하고 Mid만 남김.
+      const gm=mode==='rm'?g:(mode==='only'?g:g);
+      const gs=mode==='only'?0:(mode==='rm'?1:g);
+      mr[k]*=gm;mi[k]*=gm;sr[k]*=gs;si[k]*=gs;
+      if(k>0&&k<half){mr[N-k]*=gm;mi[N-k]*=gm;sr[N-k]*=gs;si[N-k]*=gs;}
     }
-    for(let k=0;k<=half;k++){const m=mk[k];re[k]*=m;im[k]*=m;if(k>0&&k<half){re[N-k]*=m;im[N-k]*=m;}}
-    for(let i=0;i<N;i++)im[i]=-im[i];
-    this.fft(re,im);
-    const t0=this.t-N,sc=1/(N*1.5);
-    for(let i=0;i<N;i++){const j=(t0+i)&this.SM,g=w[i]*sc;this.accL[j]+=re[i]*g;this.accR[j]-=im[i]*g;}
-    if(++this.hc>=8){this.hc=0;this.port.postMessage({hist:Array.from(hist)});hist.fill(0);}
+    this.inverse(mr,mi);this.inverse(sr,si);
+    const t0=this.t-N,sc=1/1.5;
+    for(let i=0;i<N;i++){const j=(t0+i)&this.SM,g=w[i]*sc;const mid=mr[i]*g,side=sr[i]*g;
+      this.accL[j]+=mid+side;this.accR[j]+=mid-side;}
+    if(++this.hc>=8){this.hc=0;this.port.postMessage({hist:Array.from(this.hist)});this.hist.fill(0);}
   }
-  process(inputs,outputs){
-    const inp=inputs[0],out=outputs[0];if(!out||!out.length)return true;
+  process(inputs,outputs){const inp=inputs[0],out=outputs[0];if(!out||!out.length)return true;
     const l=inp[0],r=inp[1]||inp[0],n=out[0].length,N=this.N;
-    for(let i=0;i<n;i++){
-      this.inL[this.iw]=l?l[i]:0;this.inR[this.iw]=r?r[i]:0;this.iw=(this.iw+1)&(N-1);this.t++;
-      if(this.t%this.H===0)this.frame();
-      const j=(this.t-1-N)&this.SM;
-      out[0][i]=this.accL[j];if(out[1])out[1][i]=this.accR[j];
-      this.accL[j]=0;this.accR[j]=0;
-    }
+    for(let i=0;i<n;i++){this.inL[this.iw]=l?l[i]:0;this.inR[this.iw]=r?r[i]:0;this.iw=(this.iw+1)&(N-1);this.t++;
+      if(this.t%this.H===0)this.frame();const j=(this.t-1-N)&this.SM;out[0][i]=this.accL[j];if(out[1])out[1][i]=this.accR[j];this.accL[j]=0;this.accR[j]=0;}
     return true;
   }
 }
@@ -746,6 +793,109 @@ const P={
 function playUI(){const p=$('#play');p.classList.toggle('playing',P.playing);}
 const decode=ab=>new Promise((res,rej)=>{const p=ctx.decodeAudioData(ab,res,rej);if(p&&p.catch)p.catch(rej);});
 
+/* ================= 웹 가사 검색 / 싱크 노래방 ================= */
+const LYRIC_API='https://lrclib.net/api';
+let lyricRecords=[],lyricLines=[],lyricActive=-1,lyricRequest=0,lyricSource=null;
+const normLyric=s=>(s||'').toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+function guessTrackMeta(){
+  const t=curTrack();let raw=(t?.name||$('#trackTitle').textContent||'').replace(/\.[^.]+$/,'').trim();
+  let artist='';const parts=raw.split(/\s+-\s+|\s+—\s+|\s+–\s+/);
+  if(parts.length>1){artist=parts.shift().trim();raw=parts.join(' - ').trim();}
+  return {title:raw,artist};
+}
+function lyricStatus(msg){$('#lyricStatus').textContent=msg;}
+function parseLrc(raw){
+  const out=[];for(const line of (raw||'').split(/\r?\n/)){
+    const re=/\[(\d{1,3}):(\d{2})(?:\.(\d{1,3}))?\]/g;let m,times=[];
+    while((m=re.exec(line))!==null){const frac=m[3]||'0';times.push(Number(m[1])*60+Number(m[2])+Number(('0.'+frac)));}
+    const text=line.replace(/\[[^\]]*\]/g,'').trim();
+    for(const time of times)out.push({time,text});
+  }
+  return out.sort((a,b)=>a.time-b.time);
+}
+function lyricDurationLabel(sec){return Number.isFinite(sec)?fmt(sec):'길이 미상';}
+function renderLyricCandidates(items){
+  const box=$('#lyricResults');box.replaceChildren();
+  if(!items.length){return;}
+  items.slice(0,10).forEach((r,i)=>{
+    const b=document.createElement('button');b.className='lyricCandidate';b.type='button';
+    const left=document.createElement('span');const strong=document.createElement('strong');strong.textContent=(r.trackName||'제목 미상')+' — '+(r.artistName||'가수 미상');
+    const small=document.createElement('small');small.textContent=(r.albumName||'앨범 정보 없음')+' · '+lyricDurationLabel(r.duration)+' · '+(r.syncedLyrics?'싱크 가사 있음':r.plainLyrics?'일반 가사':'가사 없음');left.append(strong,small);
+    const badge=document.createElement('span');badge.className='lyricBadge';badge.textContent=r.syncedLyrics?'싱크':'선택';b.append(left,badge);b.onclick=()=>chooseLyrics(r);box.appendChild(b);
+  });
+}
+function renderLyricLines(){
+  const box=$('#lyricLines');box.replaceChildren();lyricActive=-1;
+  if(!lyricLines.length){const e=document.createElement('div');e.className='lyricEmpty';e.textContent='가사를 찾지 못했어요. 곡 제목과 가수명을 확인해 다시 검색해 주세요.';box.append(e);return;}
+  lyricLines.forEach((line,i)=>{
+    const b=document.createElement('button');b.type='button';b.className='lyricLine'+(!line.text?' gap':'');
+    if(line.time!=null&&Number.isFinite(line.time)){b.dataset.time=String(line.time);b.title=fmt(line.time)+'부터 재생';}
+    b.textContent=line.text||'♪';
+    if(line.time!=null&&Number.isFinite(line.time))b.onclick=()=>{if(!P.buf){say('먼저 음원을 불러오세요');return;}P.seek(line.time);if(!P.playing)P.play();goTab('lyrics');};
+    else b.disabled=true;
+    box.appendChild(b);
+  });
+}
+function chooseLyrics(r){
+  lyricSource=r;
+  $$('#lyricResults .lyricCandidate').forEach(b=>b.classList.remove('on'));
+  const selected=$$('#lyricResults .lyricCandidate').find(b=>b.querySelector('strong')?.textContent===(r.trackName||'제목 미상')+' — '+(r.artistName||'가수 미상'));
+  if(selected)selected.classList.add('on');
+  $('#lyricTrackHeading').textContent=(r.trackName||'가사')+' · '+(r.artistName||'');
+  $('#lyricMeta').textContent='출처 LRCLIB · '+(r.albumName||'앨범 미상')+' · '+lyricDurationLabel(r.duration)+' · 선택한 곡 정보를 확인하세요.';
+  const timed=parseLrc(r.syncedLyrics||'');
+  if(timed.length){lyricLines=timed;$('#lyricSyncBadge').textContent='싱크 가사';lyricStatus('시간 정보가 포함된 가사를 불러왔어요. 재생 위치에 맞춰 현재 줄을 강조합니다.');}
+  else if(r.plainLyrics){lyricLines=r.plainLyrics.split(/\r?\n/).map(text=>({time:null,text:text.trim()}));$('#lyricSyncBadge').textContent='일반 가사';lyricStatus('가사는 찾았지만 타임스탬프가 없어요. 문장별 싱크 이동은 사용할 수 없습니다. 다른 싱크 가사 결과를 선택해 보세요.');}
+  else {lyricLines=[];$('#lyricSyncBadge').textContent='가사 없음';lyricStatus('선택한 곡에 표시 가능한 가사가 없습니다.');}
+  renderLyricLines();
+}
+async function searchLyrics(automatic=false){
+  const req=++lyricRequest;const meta=guessTrackMeta();
+  const title=$('#lyricTitle').value.trim()||(automatic?meta.title:'');
+  const artist=$('#lyricArtist').value.trim()||(automatic?meta.artist:'');
+  if(!title){lyricStatus('곡 제목을 입력하거나 먼저 음원을 불러오세요.');return;}
+  $('#lyricTitle').value=title;if(artist)$('#lyricArtist').value=artist;
+  $('#lyricResults').replaceChildren();$('#lyricSyncBadge').textContent='검색 중';lyricStatus('가사 데이터베이스에서 곡 정보와 싱크 가사를 확인하고 있어요…');
+  try{
+    const params=new URLSearchParams();params.set('track_name',title);if(artist)params.set('artist_name',artist);
+    let url=LYRIC_API+'/search?'+params.toString();
+    let res=await fetch(url,{headers:{'Accept':'application/json','Lrclib-Client':'BalanceMusic/1.0'}});
+    if(!res.ok)throw new Error(res.status===429?'요청이 많아요. 잠시 후 다시 시도해 주세요.':'가사 서비스 응답 오류 ('+res.status+')');
+    let data=await res.json();if(req!==lyricRequest)return;
+    if(!Array.isArray(data))data=[];
+    const titleN=normLyric(title),artistN=normLyric(artist),duration=P.buf?.duration;
+    data=data.map(r=>({...r,_score:(normLyric(r.trackName)===titleN?5:0)+(artistN&&normLyric(r.artistName)===artistN?4:0)+(Number.isFinite(duration)&&Number.isFinite(r.duration)&&Math.abs(r.duration-duration)<=3?3:Number.isFinite(duration)&&Number.isFinite(r.duration)&&Math.abs(r.duration-duration)<=10?1:0)+(r.syncedLyrics?2:0)}));
+    data.sort((a,b)=>b._score-a._score);lyricRecords=data;
+    if(!data.length){
+      const q=new URLSearchParams({q:[title,artist].filter(Boolean).join(' ')});res=await fetch(LYRIC_API+'/search?'+q.toString(),{headers:{'Accept':'application/json','Lrclib-Client':'BalanceMusic/1.0'}});
+      if(!res.ok)throw new Error('가사 검색에 실패했어요 ('+res.status+')');data=await res.json();if(req!==lyricRequest)return;lyricRecords=Array.isArray(data)?data:[];
+    }
+    if(!lyricRecords.length){lyricStatus('일치하는 가사를 찾지 못했어요. 제목·가수명을 확인하거나 직접 입력해 다시 검색해 주세요.');$('#lyricSyncBadge').textContent='검색 결과 없음';renderLyricLines();return;}
+    renderLyricCandidates(lyricRecords);
+    const exact=lyricRecords.filter(r=>normLyric(r.trackName)===titleN&&(!artistN||normLyric(r.artistName)===artistN)&&r.syncedLyrics&&parseLrc(r.syncedLyrics).length);
+    const best=exact.find(r=>!Number.isFinite(duration)||!Number.isFinite(r.duration)||Math.abs(r.duration-duration)<=8);
+    if(automatic&&best){chooseLyrics(best);lyricStatus('곡 제목·가수명'+(Number.isFinite(duration)?'·재생 길이':'')+'가 잘 일치하는 싱크 가사를 선택했어요. 아래 검색 결과에서 다른 버전도 선택할 수 있습니다.');}
+    else{lyricStatus('검색 결과 '+lyricRecords.length+'개예요. 제목·가수·길이를 확인하고 맞는 곡을 선택하세요. 싱크 가사가 있는 결과를 우선 권장합니다.');$('#lyricSyncBadge').textContent='곡 선택';renderLyricLines();}
+  }catch(e){if(req!==lyricRequest)return;lyricStatus('가사를 불러오지 못했어요. 인터넷 연결을 확인해 주세요. '+(e?.message||''));$('#lyricSyncBadge').textContent='연결 오류';}
+}
+function updateLyricHighlight(t){
+  if(!lyricLines.length||!lyricSource?.syncedLyrics)return;
+  let lo=0,hi=lyricLines.length-1,found=-1;
+  while(lo<=hi){const mid=(lo+hi)>>1;if(lyricLines[mid].time<=t){found=mid;lo=mid+1;}else hi=mid-1;}
+  if(found<0)found=0;
+  if(found!==lyricActive){const old=lyricActive;lyricActive=found;
+    if(old>=0)$('#lyricLines').children[old]?.classList.remove('active');
+    const el=$('#lyricLines').children[found];if(el){el.classList.add('active');const box=$('#lyricLines');const top=el.offsetTop;const bottom=top+el.offsetHeight;if(top<box.scrollTop+55||bottom>box.scrollTop+box.clientHeight-55)box.scrollTo({top:Math.max(0,top-box.clientHeight/2+el.offsetHeight/2),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
+    $('#lyricNow').textContent=lyricLines[found]?.time!=null?fmt(lyricLines[found].time):'—';
+  }
+}
+$('#lyricSearchBtn').addEventListener('click',()=>searchLyrics(false));
+$('#lyricTitle').addEventListener('keydown',e=>{if(e.key==='Enter')searchLyrics(false);});
+$('#lyricArtist').addEventListener('keydown',e=>{if(e.key==='Enter')searchLyrics(false);});
+$('#lyricClearBtn').addEventListener('click',()=>{lyricRequest++;lyricSource=null;lyricLines=[];lyricRecords=[];lyricActive=-1;$('#lyricTitle').value='';$('#lyricArtist').value='';$('#lyricResults').replaceChildren();$('#lyricTrackHeading').textContent='가사 싱크';$('#lyricSyncBadge').textContent='초기화됨';$('#lyricNow').textContent='—';$('#lyricMeta').textContent='곡을 불러온 뒤 가사를 검색하세요.';lyricStatus('가사가 초기화됐어요.');renderLyricLines();});
+function autoSearchLyrics(){const m=guessTrackMeta();$('#lyricTitle').value=m.title;$('#lyricArtist').value=m.artist;lyricSource=null;lyricLines=[];lyricActive=-1;$('#lyricTrackHeading').textContent='가사 싱크';$('#lyricMeta').textContent='곡 정보로 싱크 가사를 찾는 중…';$('#lyricSyncBadge').textContent='검색 중';renderLyricLines();searchLyrics(true);}
+
+
 /* ================= 전송 ================= */
 const seek=$('#seek');let dragging=false;
 $('#play').onclick=()=>{
@@ -796,6 +946,7 @@ async function loadIndex(i,auto){
     $('#tDur').textContent=fmt(buf.duration);seek.max=buf.duration;
     ['#convert','#saveOrig'].forEach(s=>$(s).disabled=false);$('#saveConv').disabled=true;converted=null;
     sheetClearFn();clk=0;renderList();
+    autoSearchLyrics();
     if(auto)P.play();
   }catch(e){
     if(tok!==loadTok)return;
@@ -803,7 +954,7 @@ async function loadIndex(i,auto){
   }
 }
 function resetPlayer(){
-  P.pause();P.buf=null;P.pos=0;idx=-1;$('#trackTitle').textContent='곡을 추가하세요';$('#trackTitle').classList.add('empty');
+  P.pause();P.buf=null;P.pos=0;idx=-1;lyricRequest++;lyricSource=null;lyricLines=[];lyricActive=-1;$('#lyricSyncBadge').textContent='대기 중';$('#lyricMeta').textContent='곡을 불러온 뒤 가사를 검색하세요.';lyricStatus('음원을 불러오면 가사를 찾아볼 수 있어요.');renderLyricLines();$('#trackTitle').textContent='곡을 추가하세요';$('#trackTitle').classList.add('empty');
   $('#tDur').textContent='0:00';$('#tCur').textContent='0:00';seek.value=0;paint(seek);['#convert','#saveOrig','#saveConv'].forEach(s=>$(s).disabled=true);
 }
 function removeAt(i){
@@ -857,7 +1008,7 @@ const specParams=()=>({mode:curMode==='orig'?'off':curMode,t:panT,w:panW,s:stren
 const sendSpec=()=>{if(N.spec)N.spec.port.postMessage(specParams());};
 function applyMode(m){
   curMode=m;$$('#vmode button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
-  $('#vocCtl').hidden=(m==='orig');$('#panCtl').hidden=(m!=='pan');
+  $('#vocCtl').hidden=(m!=='rm');$('#panCtl').hidden=(m!=='pan');
   if(!N.origOut)return;
   const use=m!=='orig'&&!!N.spec;
   if(use){if(!specOn){N.inG.connect(N.spec);specOn=true;}sendSpec();}
@@ -1361,6 +1512,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx&&ctx.
 function tick(now){
   const dt=Math.min(.2,(now-lastT)/1000);lastT=now;
   const t=P.time();
+  if(lyricSource?.syncedLyrics)updateLyricHighlight(t);
   if(!dragging){seek.value=t;paint(seek);}$('#tCur').textContent=fmt(t);
   if(!frozen){if(P.playing)clk=t;else clk+=dt*(scorePlaying?speed:1);}
   if(kbLive.size)kbLive.forEach(n=>n.t1=clk);
