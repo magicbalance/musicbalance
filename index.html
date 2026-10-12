@@ -286,6 +286,8 @@ nav.tabs button svg{width:21px;height:21px}nav.tabs button.on{color:#fff;backgro
 .lyricFooter{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:10px;font-size:11px;color:#5a75a2}
 .lyricFooter a{color:#286dc4;font-weight:800}
 @media(prefers-reduced-motion:reduce){.lyricLine{transition:none}.lyricLines{scroll-behavior:auto}}
+.mediaBox{display:grid;gap:9px}.mediaBox input,.mediaBox textarea{width:100%;min-width:0;border:1px solid #8daee0;border-radius:12px;padding:12px;font:inherit;color:var(--navy);background:#f7fbff}.mediaFrame{width:100%;aspect-ratio:16/9;border:0;border-radius:12px;background:#071a46}.mediaLinks{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mediaLinks a{display:block;text-align:center;text-decoration:none}.manualLrc{display:grid;gap:8px;margin-top:12px}.manualLrc textarea{min-height:130px;resize:vertical;font-family:ui-monospace,monospace;font-size:12px}.sourceLinks{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.sourceLinks a{font-size:12px;font-weight:800;color:#286dc4;border:1px solid #bfd3f0;border-radius:9px;padding:8px 10px;text-decoration:none}
+
 
 </style>
 </head>
@@ -447,6 +449,23 @@ nav.tabs button svg{width:21px;height:21px}nav.tabs button.on{color:#fff;backgro
         <div class="msg" id="dlMsg"></div>
         <p class="hint">mp3, mp4 같은 파일 자체를 가리키는 주소만 쓸 수 있어요. 유튜브 같은 영상 사이트의 페이지 주소는 지원하지 않아요. 내가 만들었거나 사용 권한이 있는 파일만 받아주세요.</p>
       </div>
+      <div class="card">
+        <div class="ct"><span>YouTube 영상 재생 / 파일 저장</span></div>
+        <div class="mediaBox">
+          <input id="ytUrl" type="url" placeholder="YouTube 영상 URL 붙여넣기" inputmode="url" autocapitalize="off" aria-label="YouTube 영상 URL">
+          <button class="btn blue wide" id="ytPlay">영상 재생</button>
+          <div class="ct"><span>내가 소유하거나 다운로드 권한이 있는 파일</span></div>
+          <input id="directMediaUrl" type="url" placeholder="직접 파일 주소: https://…/video.mp4 또는 song.mp3" inputmode="url" autocapitalize="off" aria-label="직접 미디어 파일 주소">
+          <button class="btn wide" id="directMediaSave">권한 있는 MP3/MP4 파일 저장</button>
+          <div id="directMediaStatus" class="msg" role="status"></div>
+          <iframe id="ytFrame" class="mediaFrame" title="YouTube 영상 플레이어" hidden allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          <div class="mediaLinks">
+            <a class="btn" id="ytSearch" href="https://www.youtube.com/results?search_query=%EA%B6%8C%EC%A7%84%EC%95%84+Rain+on+me" target="_blank" rel="noopener noreferrer">권진아 Rain on me 검색</a>
+            <a class="btn" href="https://studio.youtube.com/" target="_blank" rel="noopener noreferrer">내 영상 다운로드(Studio)</a>
+          </div>
+          <p class="hint">YouTube 영상은 공식 플레이어로 재생합니다. 타인의 영상에서 MP3/MP4를 추출하거나 다운로드하는 기능은 제공하지 않습니다. 본인 소유 영상은 YouTube Studio에서 내려받을 수 있고, 사용 권한이 있는 MP3/MP4 파일은 위 ‘주소로 추가’ 또는 ‘곡 추가’로 불러와 저장할 수 있어요.</p>
+        </div>
+      </div>
     </div>
 
     <!-- 저장 -->
@@ -472,14 +491,27 @@ nav.tabs button svg{width:21px;height:21px}nav.tabs button.on{color:#fff;backgro
     <div class="panel" data-panel="lyrics">
       <div class="card">
         <div class="ct"><span>노래방 가사</span><span class="val" id="lyricSyncBadge">대기 중</span></div>
-        <p class="hint">재생 중인 곡의 제목·가수 정보를 바탕으로 싱크 가사를 검색합니다. 파일명이 ‘가수 - 곡명’ 형식이면 더 정확해요. 일치하는 곡을 확인한 뒤 선택하세요.</p>
+        <p class="hint">재생 중인 곡의 제목·가수 정보를 바탕으로 싱크 가사를 검색합니다. ‘Rain on me’는 2026년 발매곡이라 LRCLIB에 싱크 가사가 없을 수 있어요. 제목·가수를 정확히 지정하고, 아래 공식/음원 서비스의 가사 페이지도 확인하세요.</p>
+        <div class="sourceLinks">
+          <a href="https://music.bugs.co.kr/track/6481496" target="_blank" rel="noopener noreferrer">벅스 가사: Rain on me ↗</a>
+          <a href="https://www.melon.com/song/detail.htm?songId=602321067" target="_blank" rel="noopener noreferrer">멜론 가사: Rain on me ↗</a>
+          <a href="https://www.youtube.com/results?search_query=%EA%B6%8C%EC%A7%84%EC%95%84+Rain+on+me+official" target="_blank" rel="noopener noreferrer">YouTube 공식 영상 검색 ↗</a>
+        </div>
         <div class="lyricSearch">
           <input id="lyricTitle" type="text" placeholder="곡 제목" aria-label="가사 검색 곡 제목" autocomplete="off">
           <input id="lyricArtist" type="text" placeholder="가수명 (선택 사항)" aria-label="가수명" autocomplete="off">
           <div class="lyricActions"><button class="btn" id="lyricSearchBtn">웹에서 가사 찾기</button><button class="btn" id="lyricClearBtn">가사 초기화</button></div>
+          <button class="btn wide" id="rainOnMeSearch">권진아 ‘Rain on me’ 가사 검색</button>
         </div>
         <div id="lyricStatus" class="lyricStatus" role="status" aria-live="polite">음원을 불러오면 가사를 찾아볼 수 있어요.</div>
         <div id="lyricResults" class="lyricResults"></div>
+        <div class="manualLrc">
+          <label for="manualLrcInput"><strong>직접 싱크 가사 불러오기 (.LRC 형식)</strong></label>
+          <textarea id="manualLrcInput" placeholder="[00:00.00] 첫 번째 가사 줄&#10;[00:05.20] 다음 가사 줄"></textarea>
+          <div class="lyricActions"><button class="btn" id="manualLrcApply">싱크 가사 적용</button><button class="btn" id="manualLrcFileBtn">.lrc 파일 열기</button></div>
+          <input type="file" id="manualLrcFile" accept=".lrc,.txt,text/plain" hidden>
+          <p class="hint">벅스/멜론의 일반 가사는 가사 출처 확인용 링크로 제공됩니다. 자동 싱크 타임스탬프는 별도 데이터가 필요해요. 시간표시가 있는 LRC를 붙여넣거나 파일로 열면 한 줄씩 재생 위치에 맞춰 표시되고, 줄을 눌러 해당 시점으로 이동합니다.</p>
+        </div>
       </div>
       <div class="card">
         <div class="ct"><span id="lyricTrackHeading">가사 싱크</span><span class="val" id="lyricNow">—</span></div>
@@ -890,9 +922,16 @@ function updateLyricHighlight(t){
   }
 }
 $('#lyricSearchBtn').addEventListener('click',()=>searchLyrics(false));
+$('#rainOnMeSearch').addEventListener('click',()=>{$('#lyricTitle').value='Rain on me';$('#lyricArtist').value='권진아';searchLyrics(false);});
 $('#lyricTitle').addEventListener('keydown',e=>{if(e.key==='Enter')searchLyrics(false);});
 $('#lyricArtist').addEventListener('keydown',e=>{if(e.key==='Enter')searchLyrics(false);});
 $('#lyricClearBtn').addEventListener('click',()=>{lyricRequest++;lyricSource=null;lyricLines=[];lyricRecords=[];lyricActive=-1;$('#lyricTitle').value='';$('#lyricArtist').value='';$('#lyricResults').replaceChildren();$('#lyricTrackHeading').textContent='가사 싱크';$('#lyricSyncBadge').textContent='초기화됨';$('#lyricNow').textContent='—';$('#lyricMeta').textContent='곡을 불러온 뒤 가사를 검색하세요.';lyricStatus('가사가 초기화됐어요.');renderLyricLines();});
+function applyManualLrc(raw){const parsed=parseLrc(raw);if(!parsed.length){lyricStatus('시간표시가 있는 LRC 형식을 찾지 못했어요. 예: [00:12.30] 가사 한 줄');return;}lyricRequest++;lyricSource={syncedLyrics:raw,trackName:$('#lyricTitle').value.trim()||'직접 입력한 가사',artistName:$('#lyricArtist').value.trim()};lyricLines=parsed;$('#lyricTrackHeading').textContent=lyricSource.trackName+' · '+lyricSource.artistName;$('#lyricMeta').textContent='출처: 직접 입력한 LRC · '+parsed.length+'줄';$('#lyricSyncBadge').textContent='직접 싱크';lyricStatus('LRC '+parsed.length+'줄을 적용했어요. 재생 위치에 맞춰 강조하고 줄을 눌러 이동할 수 있어요.');renderLyricLines();}
+$('#manualLrcApply').addEventListener('click',()=>applyManualLrc($('#manualLrcInput').value));
+$('#manualLrcFileBtn').addEventListener('click',()=>$('#manualLrcFile').click());
+$('#manualLrcFile').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;const raw=await f.text();$('#manualLrcInput').value=raw;applyManualLrc(raw);e.target.value='';});
+$('#ytPlay').addEventListener('click',()=>{const raw=$('#ytUrl').value.trim();let id='';try{const u=new URL(raw);if(u.hostname==='youtu.be'||u.hostname.endsWith('.youtu.be'))id=u.pathname.split('/').filter(Boolean)[0]||'';else if(u.hostname.includes('youtube.com')){if(u.pathname==='/watch')id=u.searchParams.get('v')||'';else if(/^\/(embed|shorts|live)\//.test(u.pathname))id=u.pathname.split('/')[2]||'';}}catch(e){}if(!/^[\w-]{11}$/.test(id)){say('올바른 YouTube 영상 URL을 입력하세요');return;}$('#ytFrame').src='https://www.youtube-nocookie.com/embed/'+id;$('#ytFrame').hidden=false;});
+$('#directMediaSave').addEventListener('click',async()=>{const raw=$('#directMediaUrl').value.trim(),status=$('#directMediaStatus');let u;try{u=new URL(raw);if(!/^https?:$/.test(u.protocol))throw 0;}catch(e){status.textContent='유효한 http/https 직접 파일 주소를 입력하세요.';return;}if(!/\.(mp3|mp4|m4a|wav|ogg|webm)(?:$|[?#])/i.test(u.href)){status.textContent='주소가 MP3/MP4 등 미디어 파일을 직접 가리키는지 확인하세요.';return;}status.textContent='파일을 가져오는 중…';try{const r=await fetch(u.href);if(!r.ok)throw new Error('HTTP '+r.status);const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=decodeURIComponent(u.pathname.split('/').pop()||'media-file');document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),30000);status.textContent='다운로드를 시작했어요.';}catch(e){status.textContent='사이트에서 브라우저 다운로드를 허용하지 않아 직접 저장할 수 없어요(CORS/접근 제한). 새 탭에서 파일을 열어 저장하거나, 원본 서비스의 다운로드 기능을 이용하세요.';window.open(u.href,'_blank','noopener,noreferrer');}});
 function autoSearchLyrics(){const m=guessTrackMeta();$('#lyricTitle').value=m.title;$('#lyricArtist').value=m.artist;lyricSource=null;lyricLines=[];lyricActive=-1;$('#lyricTrackHeading').textContent='가사 싱크';$('#lyricMeta').textContent='곡 정보로 싱크 가사를 찾는 중…';$('#lyricSyncBadge').textContent='검색 중';renderLyricLines();searchLyrics(true);}
 
 
