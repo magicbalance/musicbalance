@@ -219,7 +219,11 @@ body::after{font-size:14vw;color:rgba(39,83,153,.025);letter-spacing:.02em;trans
 #play:active,#play.playing{transform:translateY(3px);box-shadow:inset 0 4px 10px #102b6b55,0 1px 0 #244b91}
 #play svg{width:32px;height:32px;filter:drop-shadow(0 1px 1px #17345b55)}
 .loopRow{gap:9px;padding:3px 12px 10px;transition:padding .24s ease}.loopRow .btn{min-height:43px;font-size:13px;border-radius:11px}
-main{padding:12px 12px 22px;scrollbar-width:none;overscroll-behavior:contain}main::-webkit-scrollbar{display:none}
+main{padding:12px 12px 22px;scrollbar-width:none;overscroll-behavior:contain;scroll-behavior:smooth;overflow-anchor:none;touch-action:pan-y}main::-webkit-scrollbar{display:none}
+/* Keep the scroll gesture native; animate the deck's size changes rather than snapping it. */
+.top,.logo,.brand b,.brand small,.lcd,#trackTitle,.digits,.lcdRow,.badge,.meter,.transport,.skip,#play,.loopRow,.loopRow .btn{transition-property:padding,margin,width,height,min-height,font-size,gap,border-radius,box-shadow,transform;transition-duration:.28s;transition-timing-function:cubic-bezier(.22,.61,.36,1)}
+.paper{overflow-x:hidden;overflow-y:hidden;contain:paint}
+#sheet{height:286px;touch-action:pan-y}
 .card{border:1px solid #ffffffd9;border-radius:20px;padding:20px 15px 15px;margin-bottom:15px;background:linear-gradient(150deg,rgba(255,255,255,.97),rgba(237,243,252,.96) 65%,rgba(224,233,246,.98));box-shadow:inset 0 1px 0 #fff,0 5px 18px #263e6117,0 1px 2px #1b315019;}
 .ct{font-size:15px;margin-bottom:13px}.ct>span:first-child{border:0;border-radius:9px;background:linear-gradient(135deg,#2e4b75,#172b4d);color:#f3f7ff;padding:7px 11px;font-size:13px;letter-spacing:.015em;box-shadow:inset 0 1px #ffffff25,0 2px 5px #172b4d20}
 .val{background:linear-gradient(145deg,#203858,#101f38);color:#d9e8ff;border:1px solid #ffffff24;border-radius:9px;box-shadow:inset 0 2px 4px #0005;text-shadow:none;font-size:14px;padding:5px 10px}
@@ -255,7 +259,7 @@ nav.tabs button svg{width:21px;height:21px}nav.tabs button.on{color:#fff;backgro
 #app.compact .loopRow{gap:6px;padding:1px 10px 5px}
 #app.compact .loopRow .btn{min-height:29px;font-size:11px;border-radius:8px;margin-bottom:2px}
 @media(max-width:380px){.digits{font-size:28px}.badge{font-size:10px;padding:4px 6px}.transport{gap:5px}.skip{width:46px;min-width:46px}.skip.sm{width:36px;min-width:36px}.card{padding:18px 12px 13px}.knob{width:82px;height:82px}}
-@media(prefers-reduced-motion:reduce){.top,.lcd,.transport,.loopRow{transition:none!important}}
+@media(prefers-reduced-motion:reduce){.top,.lcd,.transport,.loopRow,.logo,.brand b,.brand small,#trackTitle,.digits,.lcdRow,.badge,.meter,.skip,#play,.loopRow .btn{transition:none!important}}
 
 </style>
 </head>
@@ -1098,45 +1102,81 @@ $('#setOrigin').onclick=()=>{origin=clk;sheetClearFn();say('여기를 1박으로
 const cv=$('#sheet'),cx=cv.getContext('2d');const STEP=5,Y38=60;const yOf=dn=>Y38+(38-dn)*STEP;
 const INK='#0d2b70',LIVE='#1a7bff',STAFF='#5a7bbf';
 function drawSystem(cx,W,page,items,curB){
-  const X0=54,X1=W-12,span=X1-X0-16,bx=b=>X0+10+(b/8)*span;
-  cx.strokeStyle=STAFF;cx.fillStyle=INK;cx.lineWidth=1;
-  for(const base of [30,18])for(let k=0;k<5;k++){const y=Math.round(yOf(base+k*2))+.5;cx.beginPath();cx.moveTo(10,y);cx.lineTo(X1,y);cx.stroke();}
-  cx.beginPath();cx.moveTo(10.5,yOf(38));cx.lineTo(10.5,yOf(18));cx.stroke();
-  cx.beginPath();cx.moveTo(X1-.5,yOf(38));cx.lineTo(X1-.5,yOf(18));cx.stroke();
-  cx.textBaseline='alphabetic';cx.font='62px "Apple Symbols","Noto Music","Bravura",serif';cx.fillText('𝄞',14,yOf(30)+8);
-  cx.font='44px "Apple Symbols","Noto Music","Bravura",serif';cx.fillText('𝄢',14,yOf(24)+2);
-  cx.strokeStyle='rgba(42,139,255,.12)';for(let i=1;i<8;i++){const x=bx(i);cx.beginPath();cx.moveTo(x,yOf(44));cx.lineTo(x,yOf(12));cx.stroke();}
-  cx.strokeStyle=STAFF;cx.beginPath();cx.moveTo(bx(4),yOf(38));cx.lineTo(bx(4),yOf(18));cx.stroke();
-  cx.font='700 12px -apple-system,"Apple SD Gothic Neo",sans-serif';cx.fillStyle='#4b5f9e';cx.fillText((page*2+1)+'–'+(page*2+2)+'마디 · 4/4 · ♩='+bpm,12,16);
+  // One system = two 4/4 bars. Staff positions are diatonic pitch steps:
+  // treble E4..F5 (30..38), bass G2..A3 (11..19).
+  const X0=54,X1=W-12,span=Math.max(100,X1-X0-16),bx=b=>X0+10+(b/8)*span;
+  const top=18,STEP=5.4,yOf=dn=>top+(38-dn)*STEP;
+  const treble=[30,32,34,36,38],bass=[11,13,15,17,19];
+  cx.save();cx.lineCap='round';cx.lineJoin='round';
+  cx.fillStyle='#52627c';cx.font='600 11px -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif';
+  cx.fillText(`${page*2+1}–${page*2+2}마디`,12,12);
+  cx.fillStyle='#2b4164';cx.font='600 10px -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif';
+  cx.fillText('4/4',X0-31,top+30);cx.fillText('4/4',X0-31,yOf(19)+30);
+  // Paper-like staff: five clean rules per clef, with stronger outer edges.
+  for(const dn of [...treble,...bass]){
+    const y=Math.round(yOf(dn))+.5;cx.beginPath();cx.moveTo(10,y);cx.lineTo(X1,y);
+    cx.strokeStyle=(dn===30||dn===38||dn===11||dn===19)?'#8a9ab1':'#b4c0d1';cx.lineWidth=(dn===30||dn===38||dn===11||dn===19)?1.05:.8;cx.stroke();
+  }
+  // Draw bar lines through both staves; beat guides are deliberately very faint.
+  for(let b=0;b<=8;b+=4){const x=bx(b);cx.beginPath();cx.moveTo(x,yOf(38));cx.lineTo(x,yOf(11));cx.strokeStyle='#8292a8';cx.lineWidth=b===0||b===8?1.2:1;cx.stroke();}
+  for(let b=1;b<8;b++){const x=bx(b);cx.beginPath();cx.moveTo(x,yOf(38));cx.lineTo(x,yOf(30));cx.moveTo(x,yOf(19));cx.lineTo(x,yOf(11));cx.strokeStyle='#edf1f6';cx.lineWidth=.7;cx.stroke();}
+  // Use text clefs, but position each against its own staff instead of arbitrary canvas coordinates.
+  cx.fillStyle='#253d63';cx.textAlign='center';cx.textBaseline='middle';
+  cx.font='50px "Noto Music","Bravura","Apple Symbols",serif';cx.fillText('𝄞',29,yOf(34)+1);
+  cx.font='39px "Noto Music","Bravura","Apple Symbols",serif';cx.fillText('𝄢',29,yOf(15)+1);cx.textAlign='left';cx.textBaseline='alphabetic';
+  // Quarter-beat labels make timing readable without crowding the notes.
+  cx.fillStyle='#91a0b4';cx.font='9px -apple-system,BlinkMacSystemFont,sans-serif';
+  for(let b=0;b<8;b++){cx.fillText(String((b%4)+1),bx(b)+2,top-3);}
+  const visible=[];
   for(const n of items){
     const t1=n.live?clk:n.t1;
-    const q=n.q||.5;let b0=Math.round((n.t0-origin)*bpm/60/q)*q,dur=Math.max(q,Math.round(Math.max(0,(t1-n.t0))*bpm/60/q)*q);
+    const q=n.src==='s'?(n.q||.25):.25;
+    const b0=Math.max(0,(n.t0-origin)*bpm/60),dur=Math.max(.08,(t1-n.t0)*bpm/60);
     if(Math.floor(b0/8)!==page)continue;
-    const dn=dnOf(n.midi);if(dn<10||dn>47)continue;
-    const x=bx(b0-page*8)+6,y=yOf(dn);
-    const ink=n.src==='s'?INK:LIVE;cx.strokeStyle=ink;cx.fillStyle=ink;cx.lineWidth=1.3;
-    if(dn>38)for(let k=40;k<=dn;k+=2){const ly=Math.round(yOf(k))+.5;cx.beginPath();cx.moveTo(x-9,ly);cx.lineTo(x+9,ly);cx.stroke();}
-    if(dn<18)for(let k=16;k>=dn;k-=2){const ly=Math.round(yOf(k))+.5;cx.beginPath();cx.moveTo(x-9,ly);cx.lineTo(x+9,ly);cx.stroke();}
-    if(dn===28){const ly=Math.round(y)+.5;cx.beginPath();cx.moveTo(x-9,ly);cx.lineTo(x+9,ly);cx.stroke();}
-    const open=dur>=1.5,whole=dur>=3,stemDown=dn>=28?dn>=34:dn>=22;
-    cx.beginPath();cx.ellipse(x,y,5.6,4.1,-.35,0,Math.PI*2);
-    if(open){cx.lineWidth=1.6;cx.stroke();}else cx.fill();
-    if(SHARP[n.midi%12]){cx.font='15px "Apple Symbols",serif';cx.fillText('♯',x-17,y+5);}
+    const dn=dnOf(n.midi);if(dn<7||dn>42)continue;
+    visible.push({n,b0,dur,dn});
+  }
+  // Quantized horizontal collision handling: nearby notes on the same beat alternate slightly.
+  const used=new Map();
+  for(const it of visible){
+    const {n,b0,dur,dn}=it;const beat=Math.round(b0*4)/4,key=beat+':'+dn,idx=used.get(key)||0;used.set(key,idx+1);
+    const x=bx(b0-page*8)+6+(idx%2?5:0),y=yOf(dn),ink=n.src==='s'?'#263a59':'#1674e8';
+    cx.strokeStyle=ink;cx.fillStyle=ink;cx.lineWidth=1.25;
+    // Ledger lines above/below the staves, including middle C.
+    if(dn>38){for(let k=40;k<=dn;k+=2){const ly=Math.round(yOf(k))+.5;cx.beginPath();cx.moveTo(x-9,ly);cx.lineTo(x+9,ly);cx.stroke();}}
+    if(dn<=28&&dn>19){for(let k=28;k>=dn;k-=2){const ly=Math.round(yOf(k))+.5;cx.beginPath();cx.moveTo(x-9,ly);cx.lineTo(x+9,ly);cx.stroke();}}
+    if(dn<11){for(let k=9;k>=dn;k-=2){const ly=Math.round(yOf(k))+.5;cx.beginPath();cx.moveTo(x-9,ly);cx.lineTo(x+9,ly);cx.stroke();}}
+    const midi=n.midi,pc=midi%12;
+    // Pitch spelling: display accidentals explicitly; MIDI is enharmonic, so sharps are the stable default.
+    const sharp=[1,3,6,8,10].includes(pc);
+    const whole=dur>=3.5,half=!whole&&dur>=1.5;
+    cx.beginPath();cx.ellipse(x,y,5.4,3.8,-.28,0,Math.PI*2);
+    if(whole||half){cx.fillStyle=ink;cx.fill();cx.strokeStyle=ink;cx.lineWidth=1.15;cx.stroke();
+      if(whole){cx.fillStyle='#fff';cx.beginPath();cx.ellipse(x,y,3.1,1.9,-.28,0,Math.PI*2);cx.fill();}}
+    else cx.fill();
+    if(sharp){cx.fillStyle=ink;cx.font='15px "Noto Music","Apple Symbols",serif';cx.fillText('♯',x-17,y+5);}
     if(!whole){
-      const sx=stemDown?x-5:x+5,ey=stemDown?y+30:y-30;
-      cx.lineWidth=1.3;cx.beginPath();cx.moveTo(sx,y);cx.lineTo(sx,ey);cx.stroke();
-      if(dur<.75){cx.beginPath();cx.moveTo(sx,ey);cx.quadraticCurveTo(sx+(stemDown?1:10),ey+(stemDown?-8:10),sx+7,ey+(stemDown?-14:16));cx.lineWidth=2;cx.stroke();}
+      const stemDown=dn>=34;const sx=stemDown?x-5:x+5,ey=stemDown?y+29:y-29;
+      cx.strokeStyle=ink;cx.lineWidth=1.25;cx.beginPath();cx.moveTo(sx,y);cx.lineTo(sx,ey);cx.stroke();
+      if(!half){ // flag for eighth/sixteenth-like durations
+        const flags=dur<.38?2:1;for(let f=0;f<flags;f++){const fy=ey+f*5;cx.beginPath();cx.moveTo(sx,fy);cx.quadraticCurveTo(sx+(stemDown?9:-9),fy+5,sx+(stemDown?8:-8),fy+12);cx.stroke();}
+      }
     }
   }
-  if(curB!=null){const cxp=bx(curB);cx.strokeStyle='#2a8bff';cx.globalAlpha=.55;cx.lineWidth=3;cx.beginPath();cx.moveTo(cxp,yOf(44));cx.lineTo(cxp,yOf(12));cx.stroke();cx.globalAlpha=1;}
+  // Current playhead spans both clefs and eases visually with the clock.
+  if(curB!=null){const x=bx(Math.max(0,Math.min(8,curB)));cx.strokeStyle='#2b83f6';cx.globalAlpha=.7;cx.lineWidth=1.6;cx.beginPath();cx.moveTo(x,yOf(38)-5);cx.lineTo(x,yOf(11)+5);cx.stroke();cx.globalAlpha=1;}
+  cx.restore();
 }
 function drawSheet(){
-  const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;
-  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
+  const dpr=Math.min(3,window.devicePixelRatio||1),W=Math.max(1,cv.clientWidth),H=Math.max(1,cv.clientHeight);
+  const pw=Math.round(W*dpr),ph=Math.round(H*dpr);
+  if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;}
   cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,W,H);
-  const b=(clk-origin)*bpm/60,page=Math.max(0,Math.floor(b/8));
+  // Slight warm paper tone and a quiet inner margin improve staff contrast.
+  cx.fillStyle='#fffefa';cx.fillRect(0,0,W,H);
+  const b=Math.max(0,(clk-origin)*bpm/60),page=Math.max(0,Math.floor(b/8));
   drawSystem(cx,W,page,scoreNotes.length?pageScore(page).concat(notes):notes,Math.max(0,b-page*8));
-  cx.font='900 13px -apple-system,"Apple SD Gothic Neo",sans-serif';cx.fillStyle='rgba(42,139,255,.35)';cx.textAlign='right';cx.fillText('밸런스뮤직',W-14,H-8);cx.textAlign='left';
+  cx.font='600 10px -apple-system,"Apple SD Gothic Neo",sans-serif';cx.fillStyle='rgba(75,96,130,.45)';cx.textAlign='right';cx.fillText('BALANCE MUSIC',W-10,H-7);cx.textAlign='left';
 }
 
 /* ---- MIDI ---- */
@@ -1301,7 +1341,16 @@ buildKeys();
 /* ================= 탭 / 메인 루프 ================= */
 function goTab(t){tab=t;$$('.panel').forEach(p=>p.classList.toggle('on',p.dataset.panel===t));$$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));$('main').scrollTop=0;}
 const mainScroll=$('main');
-mainScroll.addEventListener('scroll',()=>{$('#app').classList.toggle('compact',mainScroll.scrollTop>18);},{passive:true});
+let compactFrame=0,compactState=false;
+mainScroll.addEventListener('scroll',()=>{
+  if(compactFrame)return;
+  compactFrame=requestAnimationFrame(()=>{
+    compactFrame=0;const y=mainScroll.scrollTop;
+    // Hysteresis avoids flicker near the threshold; rAF coalesces touch-scroll events.
+    if(!compactState&&y>34){compactState=true;$('#app').classList.add('compact');}
+    else if(compactState&&y<8){compactState=false;$('#app').classList.remove('compact');}
+  });
+},{passive:true});
 $$('#tabs button').forEach(b=>b.onclick=()=>goTab(b.dataset.tab));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx&&ctx.state==='suspended')ctx.resume();});
 
