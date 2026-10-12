@@ -219,7 +219,9 @@ body::after{font-size:14vw;color:rgba(39,83,153,.025);letter-spacing:.02em;trans
 #play:active,#play.playing{transform:translateY(3px);box-shadow:inset 0 4px 10px #102b6b55,0 1px 0 #244b91}
 #play svg{width:32px;height:32px;filter:drop-shadow(0 1px 1px #17345b55)}
 .loopRow{gap:9px;padding:3px 12px 10px;transition:padding .24s ease}.loopRow .btn{min-height:43px;font-size:13px;border-radius:11px}
-main{padding:12px 12px 22px;scrollbar-width:none;overscroll-behavior:contain;scroll-behavior:smooth;overflow-anchor:none;touch-action:pan-y}main::-webkit-scrollbar{display:none}
+main{padding:12px 12px 22px;scrollbar-width:none;overscroll-behavior-y:none;overscroll-behavior-x:none;scroll-behavior:auto;overflow-anchor:none;touch-action:pan-y;-webkit-overflow-scrolling:touch;min-height:0;flex:1 1 0%}main::-webkit-scrollbar{display:none}
+/* Keep touch scrolling native and prevent scroll chaining/rubber-band at container edges. */
+html,body,#app{overscroll-behavior:none}body{overflow:hidden}#app{min-height:0;overflow:hidden}
 /* Keep the scroll gesture native; animate the deck's size changes rather than snapping it. */
 .top,.logo,.brand b,.brand small,.lcd,#trackTitle,.digits,.lcdRow,.badge,.meter,.transport,.skip,#play,.loopRow,.loopRow .btn{transition-property:padding,margin,width,height,min-height,font-size,gap,border-radius,box-shadow,transform;transition-duration:.28s;transition-timing-function:cubic-bezier(.22,.61,.36,1)}
 .paper{overflow-x:hidden;overflow-y:hidden;contain:paint}
@@ -1341,15 +1343,17 @@ buildKeys();
 /* ================= 탭 / 메인 루프 ================= */
 function goTab(t){tab=t;$$('.panel').forEach(p=>p.classList.toggle('on',p.dataset.panel===t));$$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));$('main').scrollTop=0;}
 const mainScroll=$('main');
-let compactFrame=0,compactState=false;
+let compactTimer=0,compactState=false;
+// Avoid resizing the player while the finger/momentum scroll is active; changing the
+// scroll viewport mid-gesture can feel like a spring. Apply the compact layout at rest.
 mainScroll.addEventListener('scroll',()=>{
-  if(compactFrame)return;
-  compactFrame=requestAnimationFrame(()=>{
-    compactFrame=0;const y=mainScroll.scrollTop;
-    // Hysteresis avoids flicker near the threshold; rAF coalesces touch-scroll events.
+  if(compactTimer)clearTimeout(compactTimer);
+  compactTimer=setTimeout(()=>{
+    compactTimer=0;
+    const y=mainScroll.scrollTop;
     if(!compactState&&y>34){compactState=true;$('#app').classList.add('compact');}
     else if(compactState&&y<8){compactState=false;$('#app').classList.remove('compact');}
-  });
+  },140);
 },{passive:true});
 $$('#tabs button').forEach(b=>b.onclick=()=>goTab(b.dataset.tab));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx&&ctx.state==='suspended')ctx.resume();});
