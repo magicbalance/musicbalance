@@ -300,20 +300,30 @@ details.help ol{margin:8px 0 2px;padding-left:20px;font-size:12.5px;line-height:
 
 /* ---- 스크롤 시 데크 축소 ---- */
 .top,.lcd,.transport,.loopRow,#play,.skip,.digits,.loopRow .btn{transition-property:padding,margin,width,height,min-height,font-size,gap,transform,box-shadow;transition-duration:.38s;transition-timing-function:cubic-bezier(.22,.75,.25,1)}
-#app.compact .top{padding-top:calc(var(--safe-t) + 5px);padding-bottom:5px}
-#app.compact .logo{width:28px;height:28px}
-#app.compact .brand b{font-size:15px}#app.compact .brand small{font-size:8.5px}
-#app.compact .lcd{margin:5px 10px 0;padding:5px 12px 5px}
-#app.compact #trackTitle{font-size:12px}
-#app.compact .digits{font-size:22px}#app.compact .digits.dim{font-size:13px}
-#app.compact .lcd input[type=range]{height:22px}
-#app.compact .transport{padding:6px 8px 0;gap:6px}
-#app.compact .skip{min-height:36px;width:42px;min-width:42px;font-size:11px}
-#app.compact .skip.sm{width:34px;min-width:34px}
-#app.compact #play{width:46px;min-width:46px;height:40px;min-height:40px}
-#app.compact #play svg{width:20px;height:20px}
-#app.compact .loopRow{padding:0 10px 4px;gap:6px}
-#app.compact .loopRow .btn{min-height:30px;font-size:11px;margin-bottom:5px}
+/* 스크롤하면 위쪽 데크를 납작하게 (제목·시간을 한 줄로, 버튼 낮게) */
+.lcd .lcdRow,.lcd .meter,.badge,.top .brand small,.loopRow{transition:all .32s cubic-bezier(.22,.75,.25,1)}
+#app.compact .top{padding-top:calc(var(--safe-t) + 4px);padding-bottom:4px}
+#app.compact .logo{width:24px;height:24px;border-radius:6px}#app.compact .logo svg{width:14px;height:14px}
+#app.compact .brand{gap:7px}#app.compact .brand b{font-size:14px}#app.compact .brand small{font-size:0;height:0;opacity:0}
+#app.compact .top .screw{width:9px;height:9px}
+#app.compact .lcd{margin:4px 10px 0;padding:4px 10px 3px;border-radius:8px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:center}
+#app.compact #trackTitle{font-size:12px;grid-column:1;grid-row:1}
+#app.compact .lcdRow{grid-column:2;grid-row:1;margin:0;gap:3px;flex-wrap:nowrap}
+#app.compact .digits{font-size:17px}#app.compact .digits.dim{font-size:11px}
+#app.compact .badge{display:none}
+#app.compact .lcd input[type=range]{grid-column:1 / -1;height:18px}
+#app.compact .lcd input[type=range]::-webkit-slider-thumb{width:10px;height:14px;margin-top:-4px}
+#app.compact .meter{grid-column:1 / -1;height:3px;margin-top:0}
+#app.compact .transport{padding:4px 8px 0;gap:6px}
+#app.compact .transport .btn{margin-bottom:5px}
+#app.compact .skip{min-height:32px;width:40px;min-width:40px;font-size:11px;border-radius:6px}
+#app.compact .skip.sm{width:32px;min-width:32px}
+#app.compact #play{width:48px;min-width:48px;height:34px;min-height:34px;border-radius:8px}
+#app.compact #play svg{width:18px;height:18px}
+#app.compact .loopRow{padding:0 10px 2px;gap:6px}
+#app.compact .loopRow .btn{min-height:26px;font-size:11px;margin-bottom:5px;padding-top:0}
+#app.compact .loopRow .btn[data-st]::before{display:none}
+#app.compact .loopRow .btn.on{color:#1f5fd0}
 @media(max-width:380px){.digits{font-size:30px}.transport{gap:6px}.skip{width:46px;min-width:46px}.skip.sm{width:38px;min-width:38px}.card{padding:28px 11px 11px}.btn{font-size:13.5px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -2192,10 +2202,11 @@ buildKeys();
 /* ================= 탭 / 메인 루프 ================= */
 function goTab(t){tab=t;$$('.panel').forEach(p=>p.classList.toggle('on',p.dataset.panel===t));$$('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));$('main').scrollTop=0;
   if(t==='sheet')scoreDirty=true;if(t==='master')eqDirty=true;if(t==='list')checkHelper();}
-const mainScroll=$('main');let compactTimer=0,compactState=false;
-mainScroll.addEventListener('scroll',()=>{if(compactTimer)clearTimeout(compactTimer);
-  compactTimer=setTimeout(()=>{compactTimer=0;const y=mainScroll.scrollTop;
-    if(!compactState&&y>34){compactState=true;$('#app').classList.add('compact');}else if(compactState&&y<8){compactState=false;$('#app').classList.remove('compact');}},105);},{passive:true});
+const mainScroll=$('main');let compactState=false,compactAt=0,scrollRaf=0;
+/* 스크롤하는 즉시 반응: 조금만 내려도 납작하게, 맨 위로 돌아오면 원래대로 */
+function setCompact(on){if(on===compactState)return;compactState=on;compactAt=performance.now();$('#app').classList.toggle('compact',on);}
+mainScroll.addEventListener('scroll',()=>{if(scrollRaf)return;scrollRaf=requestAnimationFrame(()=>{scrollRaf=0;const y=mainScroll.scrollTop;
+  if(!compactState&&y>12)setCompact(true);else if(compactState&&y<=1&&performance.now()-compactAt>350)setCompact(false);});},{passive:true});
 $$('#tabs button').forEach(b=>b.onclick=()=>goTab(b.dataset.tab));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx&&ctx.state==='suspended')ctx.resume();});
 
