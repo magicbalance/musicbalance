@@ -299,9 +299,9 @@ details.help summary{font-weight:800;font-size:13.5px;cursor:pointer;color:var(-
 details.help ol{margin:8px 0 2px;padding-left:20px;font-size:12.5px;line-height:1.7;color:var(--ink2)}
 
 /* ---- 스크롤 시 데크 축소 ---- */
-.top,.lcd,.transport,.loopRow,#play,.skip,.digits,.loopRow .btn{transition-property:padding,margin,width,height,min-height,font-size,gap,transform,box-shadow;transition-duration:.38s;transition-timing-function:cubic-bezier(.22,.75,.25,1)}
+.top,.lcd,.transport,.loopRow,#play,.skip,.digits,.loopRow .btn{transition-property:padding,margin,width,height,min-height,font-size,gap,transform,box-shadow;transition-duration:.12s;transition-timing-function:cubic-bezier(.2,.8,.2,1)}
 /* 스크롤하면 위쪽 데크를 납작하게 (제목·시간을 한 줄로, 버튼 낮게) */
-.lcd .lcdRow,.lcd .meter,.badge,.top .brand small,.loopRow{transition:all .32s cubic-bezier(.22,.75,.25,1)}
+.lcd .lcdRow,.lcd .meter,.badge,.top .brand small,.loopRow{transition:all .12s cubic-bezier(.2,.8,.2,1)}
 #app.compact .top{padding-top:calc(var(--safe-t) + 4px);padding-bottom:4px}
 #app.compact .logo{width:24px;height:24px;border-radius:6px}#app.compact .logo svg{width:14px;height:14px}
 #app.compact .brand{gap:7px}#app.compact .brand b{font-size:14px}#app.compact .brand small{font-size:0;height:0;opacity:0}
@@ -812,11 +812,17 @@ function buildMaster(c,input,wkReady,init){
 const effKeep=()=>keepPitch&&workletOK;
 const pitchRatio=()=>Math.pow(2,semis/12)/(effKeep()?speed:1);
 let abOn=false,abGain=1;
+let graphBuilt=false,graphTimer=0;
+/* 첫 터치: 소리 장치만 즉시 켜고(아이폰 규칙), 무거운 연결은 화면을 막지 않게 바로 다음에 */
+function wakeAudio(){
+  if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;try{ctx=new AC({latencyHint:'playback'});}catch(e){ctx=new AC();}}
+  if(ctx.state!=='running')ctx.resume().catch(()=>{});
+  if(!graphBuilt&&!graphTimer)graphTimer=setTimeout(initAudio,0);
+}
 function initAudio(){
-  if(ctx){if(ctx.state!=='running')ctx.resume().catch(()=>{});return;}
-  const AC=window.AudioContext||window.webkitAudioContext;
-  try{ctx=new AC({latencyHint:'playback'});}catch(e){ctx=new AC();}
-  ctx.resume().catch(()=>{});
+  if(!ctx)wakeAudio();
+  if(graphBuilt){if(ctx.state!=='running')ctx.resume().catch(()=>{});return;}
+  graphBuilt=true;clearTimeout(graphTimer);
   const g=v=>{const n=ctx.createGain();n.gain.value=v;return n;};
   const inG=g(1);inG.channelCount=2;inG.channelCountMode='explicit';inG.channelInterpretation='speakers';
   const origDelay=ctx.createDelay(1);origDelay.delayTime.value=0;
@@ -878,7 +884,7 @@ $('#uiVib').addEventListener('change',e=>{uiVib=e.target.checked;LS.set('uiVib',
 const pressed=new Set();
 const PRESSABLE='.btn,nav.tabs button';
 document.addEventListener('pointerdown',e=>{
-  initAudio();const b=e.target.closest&&e.target.closest(PRESSABLE);if(!b||b.disabled)return;
+  wakeAudio();const b=e.target.closest&&e.target.closest(PRESSABLE);if(!b||b.disabled)return;
   b.classList.add('down');pressed.add(b);thock(false);
   if(uiVib&&navigator.vibrate){try{navigator.vibrate(8);}catch(err){}}
 },{passive:true});
@@ -2205,8 +2211,15 @@ function goTab(t){tab=t;$$('.panel').forEach(p=>p.classList.toggle('on',p.datase
 const mainScroll=$('main');let compactState=false,compactAt=0,scrollRaf=0;
 /* 스크롤하는 즉시 반응: 조금만 내려도 납작하게, 맨 위로 돌아오면 원래대로 */
 function setCompact(on){if(on===compactState)return;compactState=on;compactAt=performance.now();$('#app').classList.toggle('compact',on);}
-mainScroll.addEventListener('scroll',()=>{if(scrollRaf)return;scrollRaf=requestAnimationFrame(()=>{scrollRaf=0;const y=mainScroll.scrollTop;
-  if(!compactState&&y>12)setCompact(true);else if(compactState&&y<=1&&performance.now()-compactAt>350)setCompact(false);});},{passive:true});
+mainScroll.addEventListener('scroll',()=>{const y=mainScroll.scrollTop;
+  if(!compactState&&y>4)setCompact(true);else if(compactState&&y<=0&&performance.now()-compactAt>120)setCompact(false);},{passive:true});
+/* 손가락 움직임에 바로 반응 (스크롤 이벤트를 기다리지 않음) */
+let tY=null;
+mainScroll.addEventListener('touchstart',e=>{tY=e.touches[0].clientY;},{passive:true});
+mainScroll.addEventListener('touchmove',e=>{if(tY==null)return;const dy=e.touches[0].clientY-tY;
+  if(dy<-6&&mainScroll.scrollHeight>mainScroll.clientHeight+20)setCompact(true);
+  else if(dy>6&&mainScroll.scrollTop<=0)setCompact(false);},{passive:true});
+mainScroll.addEventListener('wheel',e=>{if(e.deltaY>0&&mainScroll.scrollHeight>mainScroll.clientHeight+20)setCompact(true);else if(e.deltaY<0&&mainScroll.scrollTop<=0)setCompact(false);},{passive:true});
 $$('#tabs button').forEach(b=>b.onclick=()=>goTab(b.dataset.tab));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ctx&&ctx.state==='suspended')ctx.resume();});
 
